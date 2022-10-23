@@ -4,6 +4,7 @@ import { SearchingFilter } from '../SearchingFilter/SearchingFilter';
 import { ContactsList } from '../ContactsList/ContactsList';
 import { nanoid } from 'nanoid';
 import { PhonebookTitle, ContactsTitle } from './App.styled';
+import toast, { Toaster } from 'react-hot-toast';
 
 export class App extends Component {
   state = {
@@ -21,7 +22,9 @@ export class App extends Component {
     const newContact = { id: nanoid(), name, number };
 
     contacts.find(contact => contact.name === name)
-      ? alert(`${name} is already in contacts`)
+      ? toast.error(`Oops, ${name} is already in contacts`, {
+          icon: '🙃',
+        })
       : this.setState(({ contacts }) => ({
           contacts: [newContact, ...contacts],
         }));
@@ -47,6 +50,21 @@ export class App extends Component {
     }));
   };
 
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
   render() {
     const { filter } = this.state;
 
@@ -54,6 +72,7 @@ export class App extends Component {
 
     return (
       <>
+        <Toaster />
         <PhonebookTitle>Phonebook</PhonebookTitle>
         <AddingContactsForm onSubmitForm={this.formSubmitHadler} />
 
